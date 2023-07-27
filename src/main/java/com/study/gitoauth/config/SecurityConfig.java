@@ -1,5 +1,8 @@
 package com.study.gitoauth.config;
 
+import com.study.gitoauth.oauth2.PrincipalOauth2UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -10,8 +13,10 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity //스프링 시큐리티 필터가 스프링 필터체인에 등록됨
+@RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final PrincipalOauth2UserService principalOauth2UserService;
     //비밀번호 암호화
     @Bean
     public BCryptPasswordEncoder passwordEncoder(){
@@ -22,7 +27,6 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         //csrf 비활성화
         http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
-        
         //요청에 authorize 설정
         http
                 .authorizeHttpRequests(
@@ -42,7 +46,15 @@ public class SecurityConfig {
                                 //login 주소가 호출되면 시큐리티가 로그인 진행
                                 .loginProcessingUrl("/login")
                                 //성공시 리다이렉트
-                                .defaultSuccessUrl("/"));
+                                .defaultSuccessUrl("/"))
+                // oauth2 방식으로 요청이 올 경우
+                .oauth2Login(
+                        oauth2 -> oauth2
+                                // 받아 온 userInfo를 가지고 principalOauth2UserService로 가서 후처리
+                                .userInfoEndpoint(
+                                        userInfo -> userInfo
+                                                .userService(principalOauth2UserService)
+                                ));
 
         return http.build();
     }

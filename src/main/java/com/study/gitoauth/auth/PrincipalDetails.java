@@ -3,10 +3,12 @@ package com.study.gitoauth.auth;
 import com.study.gitoauth.domain.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 
 // 시큐리티가 로그인 요청을 완료하면
 // 시큐리티 세션을 만들어줌
@@ -14,12 +16,28 @@ import java.util.HashSet;
 // Authentication 안에는 User의 정보가 담겨야 한다.
 // 이게 UserDetails 타입 객체
 // 그래서 UserDetails를 구현한 PrincipalDetails를 만들어 사용
-public class PrincipalDetails implements UserDetails {
+
+// 일반 로그인과 oauth2 로그인은 서로 타입이 달라서 세션에서 꺼내올 때 구분해야 함
+// 이를 구분하지 않기 위해 PrincipalDetails에 두 객체를 모두 구현해서 타입을 맞춰줌
+public class PrincipalDetails implements UserDetails, OAuth2User {
 
     private User user;
-
+    private Map<String, Object> attributes;
+    
+    // 일반 로그인을 할 때 사용되는 생성자
     public PrincipalDetails(User user) {
         this.user = user;
+    }
+
+    // oauth 로그인을 할 때 사용되는 생성자
+    public PrincipalDetails(User user, Map<String, Object> attributes) {
+        this.user = user;
+        this.attributes = attributes;
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return this.attributes;
     }
 
     // 해당 유저의 권한을 반환해야함
@@ -60,5 +78,10 @@ public class PrincipalDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String getName() {
+        return null;
     }
 }
