@@ -1,6 +1,7 @@
 package com.study.gitoauth.auth;
 
 import com.study.gitoauth.domain.entity.User;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -12,13 +13,12 @@ import java.util.Map;
 
 // 시큐리티가 로그인 요청을 완료하면
 // 시큐리티 세션을 만들어줌
-// 이 때 세션에 들어가는 객체는 Authentication 타입이고,
-// Authentication 안에는 User의 정보가 담겨야 한다.
-// 이게 UserDetails 타입 객체
+// 이 때 세션에 들어가는 객체는 Authentication 타입
 // 그래서 UserDetails를 구현한 PrincipalDetails를 만들어 사용
 
 // 일반 로그인과 oauth2 로그인은 서로 타입이 달라서 세션에서 꺼내올 때 구분해야 함
 // 이를 구분하지 않기 위해 PrincipalDetails에 두 객체를 모두 구현해서 타입을 맞춰줌
+@Getter
 public class PrincipalDetails implements UserDetails, OAuth2User {
 
     private User user;
@@ -80,8 +80,11 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
         return true;
     }
 
+    // 이건 OAuth2User 에서의 name임
+    // oauth provider의 고유 id를 반환해주자
+    // 잘 안쓴다곤 함....
     @Override
     public String getName() {
-        return null;
+        return (String) attributes.get("id");
     }
 }

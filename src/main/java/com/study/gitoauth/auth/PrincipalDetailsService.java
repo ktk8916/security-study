@@ -16,13 +16,14 @@ import org.springframework.stereotype.Service;
 public class PrincipalDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
-
+    
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository
                 .findByUsername(username)
                 .orElseThrow(UserNotFoundException::new);
 
+        // return 된 PrincipalDetails 객체를 스프링 시큐리티 세션에 저장
         return new PrincipalDetails(user);
     }
 }
